@@ -1,0 +1,35 @@
+{
+  "name": "traveltech",
+  "version": "2.0.0",
+  "description": "AI Sandbox for travelers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/server/index.ts",
+    "dev": "ts-node src/server/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dobrydnyi880-wq/photographer-portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dobrydnyi880-wq/photographer-portfolio/issues"
+  },
+  "homepage": "https://github.com/dobrydnyi880-wq/photographer-portfolio#readme",
+  "dependencies": {
+    "combined-stream": "^1.0.8",
+    "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "mime-types": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^25.8.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
