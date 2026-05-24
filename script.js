@@ -1,79 +1,201 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Mobile Navigation Toggle ---
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
+    // --- Three.js Setup ---
+    const canvas = document.querySelector('canvas.webgl');
+    const scene = new THREE.Scene();
 
-    if (hamburger && navLinks) {
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
+    // Add Fog for depth
+    scene.fog = new THREE.FogExp2(0x050505, 0.05);
 
-            // Toggle hamburger icon between bars and times
-            const icon = hamburger.querySelector('i');
-            if (icon) {
-                if (navLinks.classList.contains('active')) {
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-times');
-                } else {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            }
-        });
+    // Sizes
+    const sizes = {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
 
-        // Close mobile menu when a link is clicked
-        const links = navLinks.querySelectorAll('a');
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                const icon = hamburger.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            });
-        });
+    // Camera
+    const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100);
+    camera.position.z = 10;
+    scene.add(camera);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        alpha: true,
+        antialias: true
+    });
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // --- 3D Objects: The Globe ---
+    // Particles (Stars/Dust)
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 2000;
+    const posArray = new Float32Array(particlesCount * 3);
+
+    for(let i = 0; i < particlesCount * 3; i++) {
+        // Spread particles around
+        posArray[i] = (Math.random() - 0.5) * 25;
     }
 
-    // --- Gallery Filtering ---
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const galleryItems = document.querySelectorAll('.gallery-item');
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterBtns.forEach(button => button.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-
-            const filterValue = btn.getAttribute('data-filter');
-
-            galleryItems.forEach(item => {
-                if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
-                    item.classList.remove('hide');
-                    // Add a slight delay for a smoother fade in effect (requires css update for transition if wanted, basic display none used here)
-                } else {
-                    item.classList.add('hide');
-                }
-            });
-        });
+    const particlesMaterial = new THREE.PointsMaterial({
+        size: 0.02,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending
     });
 
-    // --- Smooth Scrolling for Anchor Links (Optional enhancement, native scroll-behavior covers most) ---
-    // The CSS scroll-behavior: smooth handles most of this, but js can provide more control if needed.
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
 
-    // --- Contact Form Submission ---
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Basic validation and submission simulation
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+    // Wireframe Globe
+    const sphereGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const sphereMaterial = new THREE.MeshBasicMaterial({
+        color: 0x333333,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.3
+    });
+    const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(globe);
 
-            if(name && email) {
-                alert(`Thank you for your message, ${name}! I will get back to you soon.`);
-                contactForm.reset();
+    // Inner Solid Globe to hide back wires
+    const innerSphereGeo = new THREE.SphereGeometry(2.95, 32, 32);
+    const innerSphereMat = new THREE.MeshBasicMaterial({
+        color: 0x050505
+    });
+    const innerGlobe = new THREE.Mesh(innerSphereGeo, innerSphereMat);
+    scene.add(innerGlobe);
+
+    // Group to hold globe and inner globe for animation
+    const globeGroup = new THREE.Group();
+    globeGroup.add(globe);
+    globeGroup.add(innerGlobe);
+    // Position slightly to the right for the hero section
+    globeGroup.position.x = 2;
+    scene.add(globeGroup);
+
+    // --- Lights (Not strictly needed for BasicMaterial, but good if we upgrade to Standard) ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    // --- Window Resize ---
+    window.addEventListener('resize', () => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
+
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(sizes.width, sizes.height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+    // --- Mouse Interaction (Parallax) ---
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+
+    document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX - windowHalfX);
+        mouseY = (event.clientY - windowHalfY);
+    });
+
+    // --- Animation Loop ---
+    const clock = new THREE.Clock();
+
+    const tick = () => {
+        const elapsedTime = clock.getElapsedTime();
+
+        // Target for smooth mouse follow
+        targetX = mouseX * 0.001;
+        targetY = mouseY * 0.001;
+
+        // Auto rotation
+        globeGroup.rotation.y += 0.002;
+        particlesMesh.rotation.y = -0.0005 * elapsedTime;
+
+        // Mouse Parallax Effect
+        globeGroup.rotation.y += 0.05 * (targetX - globeGroup.rotation.y);
+        globeGroup.rotation.x += 0.05 * (targetY - globeGroup.rotation.x);
+
+        particlesMesh.position.x += 0.05 * (targetX * 2 - particlesMesh.position.x);
+        particlesMesh.position.y += 0.05 * (-targetY * 2 - particlesMesh.position.y);
+
+        renderer.render(scene, camera);
+        window.requestAnimationFrame(tick);
+    };
+
+    tick();
+
+    // --- GSAP ScrollTrigger Animations ---
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Initial Hero Animation
+    const tl = gsap.timeline();
+    tl.from('.hero-title', { opacity: 0, y: 50, duration: 1, ease: 'power3.out', delay: 0.5 })
+      .from('.hero-subtitle', { opacity: 0, y: 20, duration: 1, ease: 'power3.out' }, "-=0.5")
+      .from('.scroll-indicator', { opacity: 0, duration: 1 }, "-=0.5");
+
+    // Scroll Animations for 3D Object
+    // Section 2: Destinations
+    gsap.to(globeGroup.position, {
+        x: -2, // Move left
+        z: -2, // Move back slightly
+        ease: 'power2.inOut',
+        scrollTrigger: {
+            trigger: '#destinations',
+            start: 'top bottom',
+            end: 'center center',
+            scrub: true
+        }
+    });
+
+    gsap.to(globeGroup.scale, {
+        x: 1.5,
+        y: 1.5,
+        z: 1.5,
+        ease: 'power2.inOut',
+        scrollTrigger: {
+            trigger: '#destinations',
+            start: 'top bottom',
+            end: 'center center',
+            scrub: true
+        }
+    });
+
+    // Section 3: Experience
+    gsap.to(globeGroup.position, {
+        x: 0, // Move to center
+        y: -1, // Move down
+        z: 3, // Move closer
+        ease: 'power2.inOut',
+        scrollTrigger: {
+            trigger: '#experience',
+            start: 'top bottom',
+            end: 'center center',
+            scrub: true
+        }
+    });
+
+    // Text Fade Ins on Scroll
+    gsap.utils.toArray('.section').forEach((section, i) => {
+        if(i === 0) return; // Skip hero
+
+        gsap.from(section.querySelector('.content'), {
+            opacity: 0,
+            y: 50,
+            duration: 1,
+            scrollTrigger: {
+                trigger: section,
+                start: 'top 70%',
+                toggleActions: "play none none reverse"
             }
         });
-    }
+    });
 });
