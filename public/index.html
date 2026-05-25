@@ -3,27 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TravelTech - AI Sandbox</title>
+    <title>TravelTech - Release Video</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-900 text-white min-h-screen font-sans">
+<body class="bg-tt-cream text-gray-900 font-sans overflow-hidden">
+    <div id="video-container" class="relative w-full h-screen mx-auto bg-black overflow-hidden flex justify-center items-center">
 
-    <div id="toast-container" class="fixed top-5 right-5 z-50"></div>
-
-    <nav class="p-6 flex justify-between items-center backdrop-filter backdrop-blur-lg bg-white bg-opacity-5 border-b border-white border-opacity-10 shadow-lg sticky top-0 z-40">
-        <h1 class="text-3xl font-bold tracking-wider text-green-400">TravelTech</h1>
-        <div class="space-x-4">
-            <button onclick="switchMode('SOLO')" class="px-5 py-2 rounded-full border border-green-400 text-green-400 hover:bg-green-400 hover:text-gray-900 transition-all duration-300">SOLO</button>
-            <button onclick="switchMode('FAMILY')" class="px-5 py-2 rounded-full border border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-gray-900 transition-all duration-300">FAMILY</button>
-            <button onclick="switchMode('ORGANIZER')" class="px-5 py-2 rounded-full border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-gray-900 transition-all duration-300">ORGANIZER</button>
+        <!-- Кадр 0: Открывашка (Dark Atmosphere) -->
+        <div id="frame-0" class="frame absolute inset-0 bg-black flex flex-col justify-center items-center opacity-100 z-10">
+            <!-- Simulated screen glow in dark room -->
+            <div class="w-64 h-40 bg-gray-800 rounded-lg shadow-[0_0_50px_rgba(255,255,255,0.1)] flex items-center justify-center opacity-30 animate-pulse">
+            </div>
+            <p class="absolute bottom-10 text-gray-500 text-sm tracking-widest uppercase">11 вечера. Вылет в 6 утра.</p>
         </div>
-    </nav>
 
-    <main class="p-8 max-w-7xl mx-auto" id="dashboard-content">
-        <!-- Content will be dynamically populated here by script.js -->
-        <div class="text-center mt-20 text-gray-400 text-xl animate-pulse">Loading TravelTech Sandbox...</div>
-    </main>
+        <!-- Кадр 1: Удар -->
+        <div id="frame-1" class="frame absolute inset-0 bg-tt-cream flex flex-col justify-center items-center px-6 opacity-0 z-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold leading-tight max-w-3xl text-gray-900">
+                Ты взрослый профи —<br>
+                а в ночь перед вылетом<br>
+                <span class="text-tt-red italic">снова как студент-первокурсник?</span>
+            </h1>
+        </div>
+
+        <!-- Кадр 2: Диагностика -->
+        <div id="frame-2" class="frame absolute inset-0 bg-tt-cream flex flex-col justify-center items-center px-6 opacity-0 z-10">
+            <div class="text-sm font-bold tracking-wide text-gray-500 mb-6 uppercase">90 секунд · Бесплатно · Без email</div>
+
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 max-w-xl w-full shadow-lg relative">
+                <div class="text-xs text-gray-400 mb-2">Сессия #TT-2026 • 01 / 05</div>
+                <h3 class="text-xl font-bold mb-6">Вопрос 1 из 5<br>Через сколько часов твой следующий вылет?</h3>
+
+                <div class="space-y-3">
+                    <div id="diag-btn-1" class="p-4 rounded-xl border-2 border-gray-100 hover:border-gray-300 transition cursor-pointer flex items-center relative overflow-hidden bg-gray-50">
+                        <span class="font-bold mr-3 text-gray-400">A</span>
+                        <span>Меньше 24 часов — паника началась</span>
+                    </div>
+                    <div class="p-4 rounded-xl border border-gray-100 text-gray-400">
+                        <span class="font-bold mr-3">B</span> 24–48 часов — окно тревоги
+                    </div>
+                    <div class="p-4 rounded-xl border border-gray-100 text-gray-400">
+                        <span class="font-bold mr-3">C</span> 48–72 часа — пока ещё спокойно
+                    </div>
+                </div>
+
+                <!-- Simulated cursor -->
+                <div id="cursor" class="absolute w-6 h-6 z-50 pointer-events-none opacity-0" style="top: 100%; left: 80%;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" class="fill-white"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кадр 3: Score -->
+        <div id="frame-3" class="frame absolute inset-0 bg-tt-cream flex flex-col justify-center items-center opacity-0 z-10">
+
+            <!-- Mockup Phone -->
+            <div class="w-80 h-[600px] bg-white border-8 border-gray-900 rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col items-center pt-16">
+                <!-- Status bar -->
+                <div class="absolute top-0 w-full h-7 flex justify-between px-6 pt-2 text-xs font-medium">
+                    <span>9:41</span>
+                    <span class="flex gap-1 text-[10px]">●●●</span>
+                </div>
+
+                <div class="text-sm text-gray-500 mb-1">Москва → Лондон · 4ч</div>
+                <div class="text-lg font-bold mb-8">Твоя готовность</div>
+
+                <!-- Circular Score -->
+                <div class="relative w-48 h-48 flex items-center justify-center rounded-full border-[12px] border-tt-red border-opacity-20 mb-6">
+                    <div class="absolute inset-0 rounded-full border-[12px] border-tt-red" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 80% 100%);"></div>
+                    <div class="text-6xl font-bold text-gray-900">73</div>
+                </div>
+
+                <div class="text-gray-500 font-medium">+14 пунктов до 100%</div>
+            </div>
+
+            <!-- Overlay text -->
+            <div class="absolute bottom-12 w-full text-center">
+                <p class="text-2xl font-bold bg-white/80 backdrop-blur inline-block px-6 py-3 rounded-2xl shadow-sm text-gray-900 italic">
+                    Одна цифра вместо 200 пунктов в чек-листе
+                </p>
+            </div>
+        </div>
+
+        <!-- Кадр 4: Было / Стало -->
+        <div id="frame-4" class="frame absolute inset-0 bg-tt-cream flex justify-center items-center px-6 opacity-0 z-10">
+            <div id="before-after-scroll" class="max-w-3xl w-full">
+                <div class="flex items-center gap-6 py-6 border-b border-gray-200">
+                    <div class="flex-1 text-right text-gray-400 line-through text-lg">200 пунктов в чек-листе</div>
+                    <div class="text-tt-red font-bold">→</div >
+                    <div class="flex-1 text-left font-bold text-xl">Одна цифра 0–100%</div>
+                </div>
+                <div class="flex items-center gap-6 py-6 border-b border-gray-200">
+                    <div class="flex-1 text-right text-gray-400 line-through text-lg">90 минут хаотичных сборов</div>
+                    <div class="text-tt-red font-bold">→</div >
+                    <div class="flex-1 text-left font-bold text-xl">15 минут по протоколу</div>
+                </div>
+                <div class="flex items-center gap-6 py-6 border-b border-gray-200">
+                    <div class="flex-1 text-right text-gray-400 line-through text-lg">4 часа тревожного сна</div>
+                    <div class="text-tt-red font-bold">→</div >
+                    <div class="flex-1 text-left font-bold text-xl">8 часов глубокого сна</div>
+                </div>
+                <div class="flex items-center gap-6 py-6">
+                    <div class="flex-1 text-right text-gray-400 line-through text-lg">€40 за зарядку в Duty Free</div>
+                    <div class="text-tt-red font-bold">→</div >
+                    <div class="flex-1 text-left font-bold text-xl">$4.99 за всю поездку</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кадр 5: Фишки в деле -->
+        <div id="frame-5" class="frame absolute inset-0 bg-tt-cream flex justify-center items-center opacity-0 z-10">
+            <!-- Container for 3 screens -->
+            <div class="w-80 h-[600px] bg-white border-8 border-gray-900 rounded-[3rem] shadow-2xl relative overflow-hidden">
+
+                <!-- Screen 1: AI объясняет -->
+                <div id="f5-screen-1" class="absolute inset-0 bg-white p-6 opacity-100">
+                    <div class="text-xs text-gray-500 mb-4 mt-8">Список · Электроника</div>
+                    <div class="font-bold text-lg mb-4">Что взять (с обоснованием)</div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 font-bold"><span class="text-green-500">✓</span> Зонт</div>
+                        <div class="text-sm text-gray-500 ml-6">109 дождливых дней в году в Лондоне.</div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 font-bold"><span class="text-green-500">✓</span> Переходник тип G</div>
+                        <div class="text-sm text-gray-500 ml-6">В UK розетки G. Европейский C не подойдёт.</div>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Сканер чемодана -->
+                <div id="f5-screen-2" class="absolute inset-0 bg-gray-900 text-white p-6 opacity-0">
+                    <div class="text-xs text-gray-400 mb-4 mt-8">Сканер · Распознано</div>
+                    <div class="font-bold text-lg mb-6">В кадре</div>
+
+                    <div class="space-y-3 font-medium">
+                        <div class="text-gray-400">📷 Чемодан</div>
+                        <div class="text-green-400">✓ Паспорт</div>
+                        <div class="text-green-400">✓ Зарядка</div>
+                        <div class="text-green-400">✓ Переходник UK</div>
+                        <div class="text-tt-red">⚠️ Виза не вижу</div>
+                    </div>
+                </div>
+
+                <!-- Screen 3: Работает без сети -->
+                <div id="f5-screen-3" class="absolute inset-0 bg-white p-6 opacity-0">
+                    <div class="text-xs text-gray-500 mb-4 mt-8">Статус · Сеть</div>
+                    <div class="font-bold text-lg mb-6">Готов к офлайну</div>
+
+                    <div class="bg-gray-100 p-4 rounded-xl flex items-center justify-between mb-4">
+                        <span class="font-bold">OFFLINE-ГОТОВ</span>
+                        <span class="text-sm text-gray-500">14.2MB</span>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span>Список вещей</span><span class="text-green-500">✓ кэш</span></div>
+                        <div class="flex justify-between"><span>Карты розеток</span><span class="text-green-500">✓ кэш</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кадр 6: Финальный удар -->
+        <div id="frame-6" class="frame absolute inset-0 bg-tt-cream flex flex-col justify-center items-center px-6 opacity-0 z-10">
+            <div class="bg-white p-10 rounded-3xl shadow-xl text-center max-w-sm w-full relative">
+                <div class="text-gray-400 line-through text-xl mb-2">$49/год</div>
+                <div class="text-5xl font-bold mb-2">$4.99</div>
+                <div class="text-gray-500 mb-8 font-medium">за поездку</div>
+
+                <button id="buy-btn" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl text-lg hover:bg-black transition relative overflow-hidden">
+                    Купить Trip Pass
+                </button>
+
+                <!-- Finger cursor -->
+                <div id="finger" class="absolute w-12 h-12 z-50 pointer-events-none opacity-0" style="top: 150%; left: 50%; transform: translateX(-50%);">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1250/1250325.png" alt="finger" class="w-full h-full drop-shadow-md">
+                </div>
+            </div>
+
+            <div class="absolute bottom-16 w-full text-center">
+                <p class="text-xl font-bold text-gray-900 italic">
+                    «Платишь только когда летишь»
+                </p>
+            </div>
+        </div>
+
+        <!-- Кадр 7: Аутро -->
+        <div id="frame-7" class="frame absolute inset-0 bg-gray-900 flex flex-col justify-center items-center opacity-0 z-10">
+            <h1 class="text-5xl font-bold tracking-wider text-white mb-6">TravelTech</h1>
+            <div class="text-gray-400 text-sm tracking-wide">traveltech-v2.vercel.app · Закрытая бета · 2026</div>
+        </div>
+
+    </div>
 
     <script src="/script.js"></script>
 </body>
